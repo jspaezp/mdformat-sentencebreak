@@ -8,7 +8,7 @@ An [mdformat](https://github.com/executablebooks/mdformat) plugin for...
 
 ## Behavior
 
-```python
+```markdown
 Lorem ipsum dolor sit amet,
 consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna.
 
