@@ -1,0 +1,128 @@
+import random
+import re
+from typing import Mapping
+
+from markdown_it import MarkdownIt
+from mdformat.renderer import RenderContext, RenderTreeNode
+from mdformat.renderer.typing import Render
+
+
+class PunctuationRegexes:
+    CLOSING_PUNCTUATION = r"[\]}.,;:!?)\]+]"  # punctuations that denote closure
+    BREAKS = (
+        r"(?<=" + CLOSING_PUNCTUATION + r")\n+"
+    )  # punctuation followed by newline(s), not matching punctuations
+    CLOSING_PUNCTUATION = re.compile(CLOSING_PUNCTUATION)
+    BREAKS = re.compile(BREAKS)
+    # With positive lookbehind, finds closing punctuation that
+    # is followed for at least 42 characters before the end of the line
+    # matches as few characters as possible
+    # TODO make this configurable
+    # TODO make this a list an implement a 'search falling back'
+    # so there are more levels of falling back
+    SENTENCEBREAK_FALLBACK = re.compile(r"(?<=[}.,;:!?)]).{22,}?$")
+    SENTENCEBREAK_IDEAL = re.compile(r"(?<=[.,;:!?]).{22,120}$")
+
+
+def _next_sentencebreak(text):
+    match = PunctuationRegexes.SENTENCEBREAK_IDEAL.search(text)
+    if match is None:
+        match = PunctuationRegexes.SENTENCEBREAK_FALLBACK.search(text)
+
+    return match
+
+
+def break_sentences(text):
+    broken = re.compile(PunctuationRegexes.BREAKS).split(text)
+
+    outs = []
+    for sentence in broken:
+        # TODO consider here wether to keep already broken sentences
+        # or to remove newlines that are not preceeded by a closing punctuation
+        sentence = sentence.strip().replace("\n", " ")
+        partial_outs = []
+        while len(sentence) > 42:
+            match = _next_sentencebreak(sentence)
+            if match is None:
+                break
+
+            chunk = sentence[match.span()[0] :].strip()
+            partial_outs.append(chunk)
+            sentence = sentence[: match.span()[0]].strip()
+
+        [outs.append(x) for x in [sentence] + (partial_outs[::-1]) if x]
+
+    return "\n".join(outs)
+
+
+class PlaceholderMaker:
+    placeholder_chars = "abcdefghijklmnopqrstuvwxyz"
+    placeholder_chars += placeholder_chars.upper()
+
+    def __init__(self, ignores=None):
+        self.placeholders = {}
+        self.counter = 0
+        self.ignores = ignores or []
+
+    def __call__(self, string):
+        self.counter += 1
+        ph = self._make_placeholder(string)
+        return ph
+
+    def _make_placeholder(self, string):
+        length = len(string)
+        attempts = 0
+        while True:
+            ph = self._random_placeholder(length)
+            if ph not in self.placeholders and ph not in self.ignores:
+                break
+            attempts += 1
+            if attempts > 100:
+                raise ValueError(f"Could not find a unique placeholder for '{string}'")
+
+        self.placeholders[ph] = string
+        return ph
+
+    @classmethod
+    def _random_placeholder(cls, length):
+        ph = "".join(random.choices(cls.placeholder_chars, k=length - 1)) + "]"
+        return ph
+
+    def __getitem__(self, key):
+        return self.placeholders[key]
+
+    def replace_placeholders(self, text):
+        for ph, replacement in self.placeholders.items():
+            text = text.replace(ph, replacement)
+        return text
+
+
+def update_mdit(mdit: MarkdownIt) -> None:
+    """Update the parser, e.g. by adding a plugin: `mdit.use(myplugin)`"""
+    pass
+
+
+def _render_table(node: RenderTreeNode, context: RenderContext) -> str:
+    """Render a `RenderTreeNode` of type "table".
+
+    Change "table" to the name of the syntax you want to render.
+    """
+    assert len(node.children) == 1
+    inline = node.children[0]
+
+    outs = [child.render(context) for child in inline.children]
+    phm = PlaceholderMaker("\n".join(outs))
+
+    zips = zip(outs, inline.children)
+    outs = [phm(x) if y.token is None else x for x, y in zips]
+
+    out = break_sentences("".join(outs))
+    out = phm.replace_placeholders(out)
+
+    return out
+
+
+# A mapping from syntax tree node type to a function that renders it.
+# This can be used to overwrite renderer functions of existing syntax
+# or add support for new syntax.
+RENDERERS: Mapping[str, Render] = {"paragraph": _render_table}
