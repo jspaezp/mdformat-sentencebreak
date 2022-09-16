@@ -1,16 +1,12 @@
 # mdformat-plugin
 
-[![Build Status][ci-badge]][ci-link]
-[![codecov.io][cov-badge]][cov-link]
-[![PyPI version][pypi-badge]][pypi-link]
-
 An [mdformat](https://github.com/executablebooks/mdformat) plugin that adds line wrapping based on sentence completion marks.
 
 ## Behavior
 
 This input ....
 
-```markdown
+```text
 > Long sentences are broken at punctuation marks,
 > unless the generated sentence would be extremely small
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna.
@@ -45,15 +41,18 @@ Will get this ....
 
 ```
 Lorem ipsum dolor sit amet,
-consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna.
+consectetur adipiscing elit,
+sed do eiusmod tempor incididunt ut labore et dolore magna.
 
 **Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna.**
 
 Lorem ipsum dolor sit amet,
-consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna.
+consectetur adipiscing elit,
+sed do eiusmod tempor incididunt ut labore et dolore magna.
 **Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna.**
 Lorem ipsum dolor sit amet,
-consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna.
+consectetur adipiscing elit,
+sed do eiusmod tempor incididunt ut labore et dolore magna.
 
 Some.
 Very.
@@ -63,7 +62,6 @@ of.
 Sentences.
 
 a very sloppy sentence
-
 ```
 
 ## Installation
