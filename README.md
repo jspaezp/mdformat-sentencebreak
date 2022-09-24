@@ -66,4 +66,4 @@ a very sloppy sentence
 
 ## Installation
 
-> pip install {{NOT YET PUBLISHED}}
+> pip install mdformat-sentencebreak 
