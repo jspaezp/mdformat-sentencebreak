@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mdformat-sentencebreak"
-version = "0.1.0"
+version = "0.2.0a0"
 description = "Adds a really simple and naive sentence breaking scheme to mdformat"
 authors = ["J. Sebastian Paez <jspaezp@users.noreply.github.com>"]
 readme = "README.md"
