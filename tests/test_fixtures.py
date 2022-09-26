@@ -21,7 +21,8 @@ def test_fixtures(line, title, text, expected):
     print(output)
     expected_lines = expected.rstrip().splitlines()
     output_lines = output.rstrip().splitlines()
-    iterable = zip(expected_lines, output_lines, strict=True)
+    assert len(output_lines) == len(expected_lines)
+    iterable = zip(expected_lines, output_lines)
     iterable = enumerate(iterable)
 
     offset = line + len(text.splitlines()) + 2
