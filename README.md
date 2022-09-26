@@ -66,7 +66,26 @@ a very sloppy sentence
 
 ## Installation
 
-> pip install mdformat-sentencebreak
+```
+pip install mdformat-sentencebreak
+```
+
+Or using pipx
+
+```
+pipx install mdformat
+pipx inject mdformat mdformat-sentencebreak
+```
+
+
+## Usage
+
+After installing mdformat and mdformat-sentencebreak,
+you can format a markdown file by calling:
+
+```shell
+mdformat {NAME_OF_YOUR_MARKRDOWN_FILE.md}
+```
 
 ## TODO:
 
