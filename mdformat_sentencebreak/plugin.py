@@ -1,9 +1,11 @@
+import logging
 import random
 import re
 from typing import Mapping
 
 from markdown_it import MarkdownIt
 from mdformat.renderer import RenderContext, RenderTreeNode
+from mdformat.renderer._context import bullet_list, ordered_list
 from mdformat.renderer.typing import Render
 
 
@@ -32,7 +34,7 @@ def _next_sentencebreak(text):
     return match
 
 
-def break_sentences(text):
+def break_sentences(text: str):
     broken = re.compile(PunctuationRegexes.BREAKS).split(text)
 
     outs = []
@@ -99,14 +101,12 @@ class PlaceholderMaker:
 
 def update_mdit(mdit: MarkdownIt) -> None:
     """Update the parser, e.g. by adding a plugin: `mdit.use(myplugin)`"""
-    pass
+    mdit.enable("list")
 
 
-def _render_table(node: RenderTreeNode, context: RenderContext) -> str:
-    """Render a `RenderTreeNode` of type "table".
+def _render_paragraph(node: RenderTreeNode, context: RenderContext) -> str:
+    """Render a `RenderTreeNode` of type "paragraph"."""
 
-    Change "table" to the name of the syntax you want to render.
-    """
     assert len(node.children) == 1
     inline = node.children[0]
 
@@ -115,14 +115,27 @@ def _render_table(node: RenderTreeNode, context: RenderContext) -> str:
 
     zips = zip(outs, inline.children)
     outs = [phm(x) if y.token is None else x for x, y in zips]
+    outs = "".join(outs)
 
-    out = break_sentences("".join(outs))
+    out = break_sentences(outs)
     out = phm.replace_placeholders(out)
+    logging.debug(out)
 
     return out
 
 
-# A mapping from syntax tree node type to a function that renders it.
-# This can be used to overwrite renderer functions of existing syntax
-# or add support for new syntax.
-RENDERERS: Mapping[str, Render] = {"paragraph": _render_table}
+def _list_item(node: RenderTreeNode, context: RenderContext) -> str:
+    out = "".join([child.render(context) for child in node.children])
+
+    if not out.strip():
+        return ""
+
+    return out
+
+
+RENDERERS: Mapping[str, Render] = {
+    "bullet_list": bullet_list,
+    "ordered_list": ordered_list,
+    "paragraph": _render_paragraph,
+    "list_item": _list_item,
+}

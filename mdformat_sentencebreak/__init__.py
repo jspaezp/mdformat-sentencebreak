@@ -1,5 +1,7 @@
 """An mdformat plugin for..."""
 
-__version__ = "0.0.1"
+import importlib.metadata
 
-from .plugin import RENDERERS, update_mdit  # noqa: F401
+__version__ = importlib.metadata.version(__name__)
+
+from .plugin import RENDERERS, update_mdit  # noqa: E402, F401
