@@ -119,13 +119,24 @@ def _render_paragraph(node: RenderTreeNode, context: RenderContext) -> str:
 
     out = break_sentences(outs)
     out = phm.replace_placeholders(out)
-    logging.debug(out)
+    logging.debug("Rendered paragraph: " + out)
 
     return out
 
 
 def _list_item(node: RenderTreeNode, context: RenderContext) -> str:
-    out = "".join([child.render(context) for child in node.children])
+    renders = [child.render(context) for child in node.children]
+    out = ""
+
+    for render, child in zip(renders, node.children):
+        logging.debug(f"type: {child.type}")
+        logging.debug("List item render: %s", render)
+
+        if child.type != "paragraph":
+            render = "\n" + render
+
+        out += render
+        logging.debug("List item out: %s", out)
 
     if not out.strip():
         return ""
