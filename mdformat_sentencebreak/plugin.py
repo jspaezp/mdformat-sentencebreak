@@ -10,7 +10,7 @@ from mdformat.renderer.typing import Render
 
 
 class PunctuationRegexes:
-    CLOSING_PUNCTUATION = r"[\]}.,;:!?)\]+]"  # punctuations that denote closure
+    CLOSING_PUNCTUATION = r"[\]}.,;:!?)\]]"  # punctuations that denote closure
     BREAKS = (
         r"(?<=" + CLOSING_PUNCTUATION + r")\n+"
     )  # punctuation followed by newline(s), not matching punctuations
@@ -48,9 +48,19 @@ def break_sentences(text: str):
             if match is None:
                 break
 
-            chunk = sentence[match.span()[0] :].strip()
+            breaking_point = match.span()[0]
+            breaking_char = sentence[breaking_point]
+
+            while (sentence[breaking_point] == breaking_char) and (
+                breaking_point < len(sentence)
+            ):
+                # Makes it so that ellipsis are not broken
+                # Would also work for ??? as question marks
+                breaking_point += 1
+
+            chunk = sentence[breaking_point:].strip()
             partial_outs.append(chunk)
-            sentence = sentence[: match.span()[0]].strip()
+            sentence = sentence[:breaking_point].strip()
 
         [outs.append(x) for x in [sentence] + (partial_outs[::-1]) if x]
 
