@@ -66,4 +66,9 @@ a very sloppy sentence
 
 ## Installation
 
-> pip install mdformat-sentencebreak 
+> pip install mdformat-sentencebreak
+
+## TODO:
+
+- Support for ellipsis in a long line
+    - (...) gets broken into . ..
